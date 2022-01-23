@@ -10,6 +10,15 @@ import {
 import { Dialog } from '@reach/dialog';
 import dialogStyles from '@reach/dialog/styles.css';
 import { createNote, getNotes, INote } from '~/data-handlers/notes.server';
+import notesStyles from '~/styles/notes.css';
+import Spacer from '~/components/Spacer';
+
+export const links: LinksFunction = () => {
+  return [
+    { rel: 'stylesheet', href: dialogStyles },
+    { rel: 'stylesheet', href: notesStyles },
+  ];
+};
 
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
@@ -39,10 +48,6 @@ export const loader: LoaderFunction = async () => {
   return await getNotes();
 };
 
-export const links: LinksFunction = () => {
-  return [{ rel: 'stylesheet', href: dialogStyles }];
-};
-
 type NoteProps = {
   title: string;
   content: string;
@@ -51,7 +56,7 @@ type NoteProps = {
 
 function Note({ title, content }: NoteProps) {
   return (
-    <div>
+    <div className="note__container">
       <h2>{title}</h2>
       <p>{content}</p>
     </div>
@@ -71,12 +76,14 @@ export default function Index() {
   }
 
   return (
-    <div>
+    <div className="index__container">
       <h1>Duly noted!</h1>
       <button onClick={handleClickAddNewNote}>Add note</button>
-      {notes.map(({ id, title, content }) => (
-        <Note key={id} title={title} content={content} />
-      ))}
+      <div className="notes__container">
+        {notes.map(({ id, title, content }) => (
+          <Note key={id} title={title} content={content} />
+        ))}
+      </div>
       <Dialog
         isOpen={showNewNoteForm}
         onDismiss={handleClose}

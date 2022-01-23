@@ -15,5 +15,15 @@ export function createNote(title: string, content: string): Promise<void> {
 }
 
 export function getNotes(): Promise<INote[]> {
-  return Promise.resolve(tempNotes);
+  return Promise.resolve(
+    tempNotes.concat([
+      { id: uuidv4(), title: 'Note 1', content: 'Hey hopp' },
+      { id: uuidv4(), title: 'Note 2', content: 'Hey hopp' },
+      { id: uuidv4(), title: 'Note 3', content: 'Hey hopp' },
+      { id: uuidv4(), title: 'Note 4', content: 'Hey hopp' },
+      { id: uuidv4(), title: 'Note 5', content: 'Hey hopp' },
+      { id: uuidv4(), title: 'Note 6', content: 'Hey hopp' },
+      { id: uuidv4(), title: 'Note 7', content: 'Hey hopp' },
+    ])
+  );
 }

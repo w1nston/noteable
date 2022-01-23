@@ -1,0 +1,19 @@
+.notes__container {
+  display: flex;
+  width: 100vw;
+  flex-wrap: wrap;
+  row-gap: 16px;
+  column-gap: 16px;
+  padding: 8px;
+}
+
+.note__container {
+  width: 108px;
+  min-height: 100px;
+  padding: 8px;
+  border: 1px solid #aaa;
+}
+
+[data-reach-dialog-content] {
+  width: 90vw;
+}
