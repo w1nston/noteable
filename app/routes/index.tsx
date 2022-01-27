@@ -12,6 +12,7 @@ import dialogStyles from '@reach/dialog/styles.css';
 import { createNote, getNotes, INote } from '~/data-handlers/notes.server';
 import notesStyles from '~/styles/notes.css';
 import Spacer from '~/components/Spacer';
+import { ExpandableTextarea } from '~/components/ExpandableTextArea';
 
 export const links: LinksFunction = () => {
   return [
@@ -65,6 +66,7 @@ function Note({ title, content }: NoteProps) {
 
 export default function Index() {
   let [showNewNoteForm, setShowNewNoteForm] = useState<boolean>(false);
+
   let notes = useLoaderData<INote[]>();
 
   function handleClose() {
@@ -89,12 +91,28 @@ export default function Index() {
         onDismiss={handleClose}
         aria-label="Add new note form"
       >
-        <Form method="post" onSubmit={handleClose}>
-          <input type="text" name="title" placeholder="Title..." />
-          <textarea rows="2" cols="20" name="content" placeholder="Notes..." />
+        <Form className="note__form" method="post" onSubmit={handleClose}>
+          <input
+            className="note__titleInput"
+            type="text"
+            name="title"
+            placeholder="Title..."
+          />
+          <Spacer />
+          <ExpandableTextarea
+            className="note__notesInput"
+            name="content"
+            placeholder="Notes..."
+          />
           {/* TODO: add checkboxes... */}
-          <button type="submit">Create</button>
-          <button type="button" onClick={handleClose}>
+          <button className="button__primary" type="submit">
+            Create
+          </button>
+          <button
+            className="button__secondary"
+            type="button"
+            onClick={handleClose}
+          >
             Cancel
           </button>
         </Form>
