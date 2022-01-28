@@ -54,6 +54,7 @@
 .note__notesInput {
   padding: 0 8px;
   border: none;
+  flex-grow: 1;
 }
 
 .note__notesInput:focus {
@@ -76,8 +77,15 @@
   color: #fff;
 }
 
+.push-content {
+  flex-grow: 1;
+}
+
 [data-reach-dialog-content] {
   width: 90vw;
+  height: 95vh;
   display: flex;
   justify-content: center;
+  margin: 8px auto;
+  padding: 20px;
 }

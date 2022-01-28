@@ -101,7 +101,7 @@ export default function Index() {
             placeholder="Title..."
           />
           <Spacer />
-          <ExpandableTextarea
+          <textarea
             className="note__notesInput"
             name="content"
             placeholder="Notes..."
