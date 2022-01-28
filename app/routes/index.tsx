@@ -80,11 +80,13 @@ export default function Index() {
   return (
     <div className="index__container">
       <h1>Duly noted!</h1>
-      <button onClick={handleClickAddNewNote}>Add note</button>
-      <div className="notes__container">
-        {notes.map(({ id, title, content }) => (
-          <Note key={id} title={title} content={content} />
-        ))}
+      <button className="note_addNoteButton" onClick={handleClickAddNewNote}>Add note</button>
+      <div className="notes_container">
+        <div className="notes__wrapper">
+          {notes.map(({ id, title, content }) => (
+            <Note key={id} title={title} content={content} />
+          ))}
+        </div>
       </div>
       <Dialog
         isOpen={showNewNoteForm}

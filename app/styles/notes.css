@@ -1,10 +1,26 @@
+.index__container {
+  padding: 0 8px;
+}
+
+.note_addNoteButton {
+  height: 42px;
+  background-color: #0074d9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
 .notes__container {
-  display: flex;
   width: 100vw;
+}
+
+.notes__wrapper {
+  display: flex;
+  width: 100%;
   flex-wrap: wrap;
   row-gap: 8px;
   column-gap: 8px;
-  padding: 8px;
 }
 
 .note__container {
