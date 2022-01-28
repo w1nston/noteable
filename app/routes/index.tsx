@@ -12,7 +12,6 @@ import dialogStyles from '@reach/dialog/styles.css';
 import { createNote, getNotes, INote } from '~/data-handlers/notes.server';
 import notesStyles from '~/styles/notes.css';
 import Spacer from '~/components/Spacer';
-import { ExpandableTextarea } from '~/components/ExpandableTextArea';
 
 export const links: LinksFunction = () => {
   return [
