@@ -7,11 +7,24 @@ import {
   redirect,
   useLoaderData,
 } from 'remix';
+import { z } from 'zod';
 import { Dialog } from '@reach/dialog';
 import dialogStyles from '@reach/dialog/styles.css';
-import { createNote, getNotes, INote } from '~/data-handlers/notes.server';
+import {
+  createNote,
+  updateNote,
+  getNotes,
+  INote,
+} from '~/data-handlers/notes.server';
 import notesStyles from '~/styles/notes.css';
 import Spacer from '~/components/Spacer';
+
+let NoteSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+});
+
 
 export const links: LinksFunction = () => {
   return [
@@ -39,7 +52,22 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  await createNote(title, content);
+  let method = request.method.toLowerCase();
+
+  if (method === 'post') {
+    console.log('CREATE');
+
+    await createNote(title, content);
+  } else if (method === 'put') {
+    let id = body.get('id');
+    if (!id) {
+      throw new Error(
+        'TODO: handle validation: https://remix.run/docs/en/v1/tutorials/jokes'
+      );
+    }
+    console.log('EDIT!', { id, title, content });
+    await updateNote(id, title, content);
+  }
 
   return redirect('/');
 };
@@ -49,26 +77,103 @@ export const loader: LoaderFunction = async () => {
 };
 
 type NoteProps = {
+  id: string;
   title: string;
   content: string;
+  onClick: (note: INote) => void;
   // TODO: checkbox bro'
 };
 
-function Note({ title, content }: NoteProps) {
+function Note({ id, title, content, onClick }: NoteProps) {
+  function handleClick() {
+    onClick({ id, title, content });
+  }
+
   return (
-    <div className="note__container">
-      <h2>{title}</h2>
+    <button onClick={handleClick} className="note__container">
+      <h2 className="note__title">{title}</h2>
       <p>{content}</p>
-    </div>
+    </button>
+  );
+}
+
+type NoteFormProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
+  return (
+    <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Add new note form">
+      <Form className="note__form" method="post" onSubmit={onClose}>
+        <input
+          className="note__titleInput"
+          type="text"
+          name="title"
+          placeholder="Title..."
+        />
+        <Spacer />
+        <textarea
+          className="note__notesInput"
+          name="content"
+          placeholder="Notes..."
+        />
+        {/* TODO: add checkboxes... */}
+        <button className="button__primary" type="submit">
+          Create
+        </button>
+        <button className="button__secondary" type="button" onClick={onClose}>
+          Cancel
+        </button>
+      </Form>
+    </Dialog>
+  );
+}
+
+type EditNoteFormProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  note: INote | null;
+};
+
+function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
+  return (
+    <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Edit note form">
+      <Form className="note__form" method="put" onSubmit={onClose}>
+        <input type="hidden" name="id" value={note?.id} />
+        <input
+          className="note__titleInput"
+          type="text"
+          name="title"
+          placeholder="Title..."
+          defaultValue={note?.title}
+        />
+        <Spacer />
+        <textarea
+          className="note__notesInput"
+          name="content"
+          placeholder="Notes..."
+          defaultValue={note?.content}
+        />
+        {/* TODO: add checkboxes... */}
+        <button className="button__primary" type="submit">
+          Save
+        </button>
+        <button className="button__secondary" type="button" onClick={onClose}>
+          Cancel
+        </button>
+      </Form>
+    </Dialog>
   );
 }
 
 export default function Index() {
   let [showNewNoteForm, setShowNewNoteForm] = useState<boolean>(false);
+  let [editNote, setEditNote] = useState<INote | null>(null);
 
   let notes = useLoaderData<INote[]>();
 
-  function handleClose() {
+  function handleCloseNewNoteForm() {
     setShowNewNoteForm(false);
   }
 
@@ -76,48 +181,39 @@ export default function Index() {
     setShowNewNoteForm(true);
   }
 
+  function handleClickNote(note: INote) {
+    setEditNote(note);
+  }
+
+  function handleCloseEditNoteForm() {
+    setEditNote(null);
+  }
+
   return (
     <div className="index__container">
       <h1>Duly noted!</h1>
-      <button className="note_addNoteButton" onClick={handleClickAddNewNote}>Add note</button>
+      <button className="note_addNoteButton" onClick={handleClickAddNewNote}>
+        Add note
+      </button>
       <div className="notes_container">
         <div className="notes__wrapper">
           {notes.map(({ id, title, content }) => (
-            <Note key={id} title={title} content={content} />
+            <Note
+              key={id}
+              id={id}
+              title={title}
+              content={content}
+              onClick={handleClickNote}
+            />
           ))}
         </div>
       </div>
-      <Dialog
-        isOpen={showNewNoteForm}
-        onDismiss={handleClose}
-        aria-label="Add new note form"
-      >
-        <Form className="note__form" method="post" onSubmit={handleClose}>
-          <input
-            className="note__titleInput"
-            type="text"
-            name="title"
-            placeholder="Title..."
-          />
-          <Spacer />
-          <textarea
-            className="note__notesInput"
-            name="content"
-            placeholder="Notes..."
-          />
-          {/* TODO: add checkboxes... */}
-          <button className="button__primary" type="submit">
-            Create
-          </button>
-          <button
-            className="button__secondary"
-            type="button"
-            onClick={handleClose}
-          >
-            Cancel
-          </button>
-        </Form>
-      </Dialog>
+      <NewNoteForm isOpen={showNewNoteForm} onClose={handleCloseNewNoteForm} />
+      <EditNoteForm
+        isOpen={editNote !== null}
+        onClose={handleCloseEditNoteForm}
+        note={editNote}
+      />
     </div>
   );
 }

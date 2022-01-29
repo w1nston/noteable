@@ -26,10 +26,14 @@
 .note__container {
   width: 30vw;
   min-height: 100px;
-  padding: 8px;
+  border: none;
   border-radius: 8px;
   background-color: #fffcc9;
   color: #403f32;
+}
+
+.note__title {
+  line-height: 1.5rem;
 }
 
 .note__form {
