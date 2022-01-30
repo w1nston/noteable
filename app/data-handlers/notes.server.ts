@@ -6,7 +6,6 @@ export type INote = {
   content: string; // TODO: or checkbox representation
 };
 
-
 // TODO: Temporary before database...
 let tempNotes: INote[] = [];
 
@@ -21,7 +20,6 @@ export function updateNote(
   content: string
 ): Promise<void> {
   let index = tempNotes.findIndex((note) => note.id === id);
-  console.log({ index, note: tempNotes[index], tempNotes, id, title, content });
 
   tempNotes[index].title = title;
   tempNotes[index].content = content;
@@ -29,5 +27,16 @@ export function updateNote(
 }
 
 export function getNotes(): Promise<INote[]> {
+  // TEMPORARY HACK BEFORE DB IS AT PLACE
+  if (tempNotes.length === 0) {
+    for (let i = 0; i < 4; ++i) {
+      tempNotes.push({
+        id: uuidv4(),
+        title: `My note ${i + 1}`,
+        content: 'Herro',
+      });
+    }
+  }
+
   return Promise.resolve(tempNotes);
 }

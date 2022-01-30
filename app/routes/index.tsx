@@ -7,7 +7,6 @@ import {
   redirect,
   useLoaderData,
 } from 'remix';
-import { z } from 'zod';
 import { Dialog } from '@reach/dialog';
 import dialogStyles from '@reach/dialog/styles.css';
 import {
@@ -18,13 +17,7 @@ import {
 } from '~/data-handlers/notes.server';
 import notesStyles from '~/styles/notes.css';
 import Spacer from '~/components/Spacer';
-
-let NoteSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  content: z.string(),
-});
-
+import { getNoteSchema } from '~/utils/network-typesafety';
 
 export const links: LinksFunction = () => {
   return [
@@ -35,22 +28,14 @@ export const links: LinksFunction = () => {
 
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
+  let NoteSchema = getNoteSchema();
 
   let title = body.get('title');
   let content = body.get('content');
   // TODO: account for possible checkboxes...
 
-  if (!title) {
-    throw new Error(
-      'TODO: handle validation: https://remix.run/docs/en/v1/tutorials/jokes'
-    );
-  }
-
-  if (!content) {
-    throw new Error(
-      'TODO: handle validation: https://remix.run/docs/en/v1/tutorials/jokes'
-    );
-  }
+  NoteSchema.NoteContent.parse({ content });
+  NoteSchema.NoteTitle.parse({ title });
 
   let method = request.method.toLowerCase();
 
@@ -60,11 +45,9 @@ export const action: ActionFunction = async ({ request }) => {
     await createNote(title, content);
   } else if (method === 'put') {
     let id = body.get('id');
-    if (!id) {
-      throw new Error(
-        'TODO: handle validation: https://remix.run/docs/en/v1/tutorials/jokes'
-      );
-    }
+
+    NoteSchema.NoteId.parse({ id });
+
     console.log('EDIT!', { id, title, content });
     await updateNote(id, title, content);
   }
