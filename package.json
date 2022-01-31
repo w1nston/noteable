@@ -13,6 +13,7 @@
     "deploy": "npm run build && wrangler publish"
   },
   "dependencies": {
+    "@reach/alert": "0.16.0",
     "@reach/dialog": "0.16.2",
     "@remix-run/cloudflare-workers": "1.1.3",
     "@remix-run/react": "1.1.3",

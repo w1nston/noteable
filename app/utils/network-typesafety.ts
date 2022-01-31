@@ -1,32 +1,26 @@
 import { z, ZodObject, ZodString } from 'zod';
 
 type Schema = {
-  NoteId: ZodObject<{ id: ZodString }>;
-  NoteContent: ZodObject<{ content: ZodString }>;
-  NoteTitle: ZodObject<{ title: ZodString }>;
+  NoteId: ZodString;
+  NoteContent: ZodString;
+  NoteTitle: ZodString;
 };
 
-let NoteId: ZodObject<{ id: ZodString }> | null;
-let NoteContent: ZodObject<{ content: ZodString }> | null;
-let NoteTitle: ZodObject<{ title: ZodString }> | null;
+let NoteId: ZodString | null;
+let NoteContent: ZodString | null;
+let NoteTitle: ZodString | null;
 
 export function getNoteSchema() {
   if (!NoteContent) {
-    NoteContent = z.object({
-      content: z.string(),
-    });
+    NoteContent = z.string();
   }
 
   if (!NoteId) {
-    NoteId = z.object({
-      id: z.string(),
-    });
+    NoteId = z.string();
   }
 
   if (!NoteTitle) {
-    NoteTitle = z.object({
-      title: z.string(),
-    });
+    NoteTitle = z.string();
   }
 
   return {

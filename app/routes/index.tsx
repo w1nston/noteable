@@ -2,12 +2,15 @@ import { useState } from 'react';
 import {
   ActionFunction,
   Form,
+  json,
   LinksFunction,
   LoaderFunction,
   redirect,
+  useActionData,
   useLoaderData,
 } from 'remix';
 import { Dialog } from '@reach/dialog';
+import { Alert } from '@reach/alert';
 import dialogStyles from '@reach/dialog/styles.css';
 import {
   createNote,
@@ -26,29 +29,38 @@ export const links: LinksFunction = () => {
   ];
 };
 
+type ActionData = {
+  message?: string;
+};
+
+const discardEmptyNoteRequest = (data: ActionData) =>
+  json(data, { status: 200 });
+
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
   let NoteSchema = getNoteSchema();
 
-  let title = body.get('title');
-  let content = body.get('content');
+  let _title = body.get('title');
+  let _content = body.get('content');
   // TODO: account for possible checkboxes...
 
-  NoteSchema.NoteContent.parse({ content });
-  NoteSchema.NoteTitle.parse({ title });
+  // TODO: Would probably be nicer to have one parse
+  // for create, and one parse for edit...
+  let content = NoteSchema.NoteContent.parse(_content);
+  let title = NoteSchema.NoteTitle.parse(_title);
 
   let method = request.method.toLowerCase();
 
   if (method === 'post') {
-    console.log('CREATE');
+    if (title.length === 0 && content.length === 0) {
+      return discardEmptyNoteRequest({ message: 'Discarded empty note' });
+    }
 
     await createNote(title, content);
   } else if (method === 'put') {
-    let id = body.get('id');
+    let _id = body.get('id');
+    let id = NoteSchema.NoteId.parse(_id);
 
-    NoteSchema.NoteId.parse({ id });
-
-    console.log('EDIT!', { id, title, content });
     await updateNote(id, title, content);
   }
 
@@ -154,6 +166,7 @@ export default function Index() {
   let [showNewNoteForm, setShowNewNoteForm] = useState<boolean>(false);
   let [editNote, setEditNote] = useState<INote | null>(null);
 
+  let actionData = useActionData<ActionData>();
   let notes = useLoaderData<INote[]>();
 
   function handleCloseNewNoteForm() {
@@ -197,6 +210,7 @@ export default function Index() {
         onClose={handleCloseEditNoteForm}
         note={editNote}
       />
+      {actionData?.message ? <Alert>{actionData.message}</Alert> : null}
     </div>
   );
 }
