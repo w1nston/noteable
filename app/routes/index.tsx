@@ -7,6 +7,7 @@ import {
   LoaderFunction,
   redirect,
   useActionData,
+  useFetcher,
   useLoaderData,
 } from 'remix';
 import { Dialog } from '@reach/dialog';
@@ -33,38 +34,50 @@ type ActionData = {
   message?: string;
 };
 
-const discardEmptyNoteRequest = (data: ActionData) =>
-  json(data, { status: 200 });
+function discardEmptyNoteRequest(data: ActionData) {
+  return json(data, { status: 200 });
+}
+
+function validateContent(content: FormDataEntryValue | null): string {
+  let NoteSchema = getNoteSchema();
+  return NoteSchema.NoteContent.parse(content);
+}
+
+function validateId(id: FormDataEntryValue | null): string {
+  let NoteSchema = getNoteSchema();
+  return NoteSchema.NoteId.parse(id);
+}
+
+function validateTitle(title: FormDataEntryValue | null): string {
+  let NoteSchema = getNoteSchema();
+  return NoteSchema.NoteTitle.parse(title);
+}
 
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
-  let NoteSchema = getNoteSchema();
 
-  let _title = body.get('title');
-  let _content = body.get('content');
   // TODO: account for possible checkboxes...
-
-  // TODO: Would probably be nicer to have one parse
-  // for create, and one parse for edit...
-  let content = NoteSchema.NoteContent.parse(_content);
-  let title = NoteSchema.NoteTitle.parse(_title);
 
   let method = request.method.toLowerCase();
 
   if (method === 'post') {
+    let content = validateContent(body.get('content'));
+    let title = validateTitle(body.get('title'));
+
     if (title.length === 0 && content.length === 0) {
       return discardEmptyNoteRequest({ message: 'Discarded empty note' });
     }
 
     await createNote(title, content);
+    return json({ created: true }, { status: 201 });
   } else if (method === 'put') {
-    let _id = body.get('id');
-    let id = NoteSchema.NoteId.parse(_id);
+    let content = validateContent(body.get('content'));
+    let id = validateId(body.get('id'));
+    let title = validateTitle(body.get('title'));
 
     await updateNote(id, title, content);
+    return json({ updated: true }, { status: 200 });
   }
-
-  return redirect('/');
 };
 
 export const loader: LoaderFunction = async () => {
@@ -98,9 +111,11 @@ type NoteFormProps = {
 };
 
 function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
+  let fetcher = useFetcher();
+
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Add new note form">
-      <Form className="note__form" method="post" onSubmit={onClose}>
+      <fetcher.Form className="note__form" method="post" onSubmit={onClose}>
         <input
           className="note__titleInput"
           type="text"
@@ -120,7 +135,7 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
         <button className="button__secondary" type="button" onClick={onClose}>
           Cancel
         </button>
-      </Form>
+      </fetcher.Form>
     </Dialog>
   );
 }
@@ -132,9 +147,11 @@ type EditNoteFormProps = {
 };
 
 function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
+  let fetcher = useFetcher();
+
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Edit note form">
-      <Form className="note__form" method="put" onSubmit={onClose}>
+      <fetcher.Form className="note__form" method="put" onSubmit={onClose}>
         <input type="hidden" name="id" value={note?.id} />
         <input
           className="note__titleInput"
@@ -157,7 +174,7 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
         <button className="button__secondary" type="button" onClick={onClose}>
           Cancel
         </button>
-      </Form>
+      </fetcher.Form>
     </Dialog>
   );
 }
