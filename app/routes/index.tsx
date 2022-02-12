@@ -115,6 +115,9 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
 
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Add new note form">
+      <button className="button__close" type="button" onClick={onClose}>
+        {'<'}
+      </button>
       <fetcher.Form className="note__form" method="post" onSubmit={onClose}>
         <input
           className="note__titleInput"
@@ -132,9 +135,6 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
         <button className="button__primary" type="submit">
           Create
         </button>
-        <button className="button__secondary" type="button" onClick={onClose}>
-          Cancel
-        </button>
       </fetcher.Form>
     </Dialog>
   );
@@ -151,6 +151,14 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
 
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Edit note form">
+      <button
+        className="button__close"
+        aria-label="close note"
+        type="button"
+        onClick={onClose}
+      >
+        {`<`}
+      </button>
       <fetcher.Form className="note__form" method="put" onSubmit={onClose}>
         <input type="hidden" name="id" value={note?.id} />
         <input
@@ -170,9 +178,6 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
         {/* TODO: add checkboxes... */}
         <button className="button__primary" type="submit">
           Save
-        </button>
-        <button className="button__secondary" type="button" onClick={onClose}>
-          Cancel
         </button>
       </fetcher.Form>
     </Dialog>
