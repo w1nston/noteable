@@ -26,6 +26,13 @@ export function updateNote(
   return Promise.resolve();
 }
 
+export function deleteNote(id: string): Promise<void> {
+  let noteIndex = tempNotes.findIndex((note) => note.id === id);
+  delete tempNotes[noteIndex];
+  tempNotes = tempNotes.filter(Boolean);
+  return Promise.resolve();
+}
+
 export function getNotes(): Promise<INote[]> {
   // TEMPORARY HACK BEFORE DB IS AT PLACE
   if (tempNotes.length === 0) {

@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import {
   ActionFunction,
-  Form,
   json,
   LinksFunction,
   LoaderFunction,
-  redirect,
   useActionData,
   useFetcher,
   useLoaderData,
@@ -16,6 +14,7 @@ import dialogStyles from '@reach/dialog/styles.css';
 import {
   createNote,
   updateNote,
+  deleteNote,
   getNotes,
   INote,
 } from '~/data-handlers/notes.server';
@@ -33,6 +32,12 @@ export const links: LinksFunction = () => {
 type ActionData = {
   message?: string;
 };
+
+enum ButtonAction {
+  Create = 'create',
+  Delete = 'delete',
+  Save = 'save',
+}
 
 function discardEmptyNoteRequest(data: ActionData) {
   return json(data, { status: 200 });
@@ -56,11 +61,9 @@ function validateTitle(title: FormDataEntryValue | null): string {
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
 
-  // TODO: account for possible checkboxes...
+  let _action = body.get('_action');
 
-  let method = request.method.toLowerCase();
-
-  if (method === 'post') {
+  if (_action === ButtonAction.Create) {
     let content = validateContent(body.get('content'));
     let title = validateTitle(body.get('title'));
 
@@ -70,7 +73,17 @@ export const action: ActionFunction = async ({ request }) => {
 
     await createNote(title, content);
     return json({ created: true }, { status: 201 });
-  } else if (method === 'put') {
+  }
+
+  if (_action === ButtonAction.Delete) {
+    let id = validateId(body.get('id')); // TODO: bad request status if no id
+
+    await deleteNote(id);
+    return json({ deleted: true }, { status: 200 });
+  }
+
+  if (_action === ButtonAction.Save) {
+    // TODO: bug here?
     let content = validateContent(body.get('content'));
     let id = validateId(body.get('id'));
     let title = validateTitle(body.get('title'));
@@ -78,6 +91,10 @@ export const action: ActionFunction = async ({ request }) => {
     await updateNote(id, title, content);
     return json({ updated: true }, { status: 200 });
   }
+
+  // TODO: return bad request status
+
+  // TODO: account for possible checkboxes...
 };
 
 export const loader: LoaderFunction = async () => {
@@ -132,7 +149,12 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
           placeholder="Notes..."
         />
         {/* TODO: add checkboxes... */}
-        <button className="button__primary" type="submit">
+        <button
+          name="_action"
+          value={ButtonAction.Create}
+          className="button__primary"
+          type="submit"
+        >
           Create
         </button>
       </fetcher.Form>
@@ -176,8 +198,24 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
           defaultValue={note?.content}
         />
         {/* TODO: add checkboxes... */}
-        <button className="button__primary" type="submit">
+        <button
+          name="_action"
+          value={ButtonAction.Save}
+          className="button__primary"
+          type="submit"
+        >
           Save
+        </button>
+      </fetcher.Form>
+      <fetcher.Form method="delete" onSubmit={onClose}>
+        <input type="hidden" name="id" value={note?.id} />
+        <button
+          name="_action"
+          value={ButtonAction.Delete}
+          className="button__danger"
+          type="submit"
+        >
+          Delete
         </button>
       </fetcher.Form>
     </Dialog>
