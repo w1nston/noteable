@@ -293,8 +293,12 @@ export default function Index() {
   return (
     <div className="index__container">
       <h1>Duly noted!</h1>
-      <button className="note_addNoteButton" onClick={handleClickAddNewNote}>
-        Add note
+      <button
+        className="note_addNoteButton"
+        aria-label="Add note"
+        onClick={handleClickAddNewNote}
+      >
+        +
       </button>
       <div className="notes_container">
         <div className="notes__wrapper">
