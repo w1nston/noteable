@@ -6,6 +6,7 @@ import {
   LoaderFunction,
   useActionData,
   useFetcher,
+  useFetchers,
   useLoaderData,
 } from 'remix';
 import { Dialog } from '@reach/dialog';
@@ -222,12 +223,56 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
   );
 }
 
+function optimisticPost(notes: INote[], newNote: INote): INote[] {
+  return notes.concat([newNote]);
+}
+
+function optimisticPut(notes: INote[], updatedNote: INote): INote[] {
+  let noteIndex = notes.findIndex((note) => note.id === updatedNote.id);
+  if (noteIndex > -1) {
+    notes[noteIndex] = updatedNote;
+    return notes;
+  }
+
+  return notes;
+}
+
+function optimisticDelete(notes: INote[], noteId: string): INote[] {
+  return notes.filter((note) => note.id !== noteId);
+}
+
+function useOptimisticUI(): INote[] {
+  let notes = useLoaderData<INote[]>();
+  let fetchers = useFetchers();
+
+  if (fetchers.length > 0) {
+    let [fetcher] = fetchers;
+
+    if (fetcher.submission) {
+      let { method, formData } = fetcher.submission;
+
+      if (method.toLowerCase() === 'post') {
+        let newNote: INote = Object.fromEntries(formData) as INote; // TODO: Maybe validation?
+        return optimisticPost(notes, newNote);
+      } else if (method.toLowerCase() === 'put') {
+        let updatedNote: INote = Object.fromEntries(formData) as INote; // -"-
+        return optimisticPut(notes, updatedNote);
+      } else if (method.toLowerCase() === 'delete') {
+        let noteId: string = formData.get('id') as string; // -"-
+        return optimisticDelete(notes, noteId);
+      }
+    }
+  }
+
+  return notes;
+}
+
 export default function Index() {
   let [showNewNoteForm, setShowNewNoteForm] = useState<boolean>(false);
   let [editNote, setEditNote] = useState<INote | null>(null);
+  let notes = useOptimisticUI();
 
   let actionData = useActionData<ActionData>();
-  let notes = useLoaderData<INote[]>();
 
   function handleCloseNewNoteForm() {
     setShowNewNoteForm(false);
