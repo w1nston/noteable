@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 export type INote = {
   id: string;
@@ -10,7 +10,7 @@ export type INote = {
 let tempNotes: INote[] = [];
 
 export function createNote(title: string, content: string): Promise<void> {
-  tempNotes.push({ id: uuidv4(), title, content });
+  tempNotes.push({ id: uuid(), title, content });
   return Promise.resolve();
 }
 
@@ -38,7 +38,7 @@ export function getNotes(): Promise<INote[]> {
   if (tempNotes.length === 0) {
     for (let i = 0; i < 4; ++i) {
       tempNotes.push({
-        id: uuidv4(),
+        id: uuid(),
         title: `My note ${i + 1}`,
         content: 'Herro',
       });

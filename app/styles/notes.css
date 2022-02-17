@@ -104,7 +104,7 @@
   border-radius: 4px;
 }
 
-.button__close {
+.button__saveAndClose {
   width: fit-content;
   padding: 20px;
   display: flex;

@@ -9,6 +9,7 @@ import {
   useFetchers,
   useLoaderData,
 } from 'remix';
+import { v4 as uuid } from 'uuid';
 import { Dialog } from '@reach/dialog';
 import { Alert } from '@reach/alert';
 import dialogStyles from '@reach/dialog/styles.css';
@@ -133,10 +134,16 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
 
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Add new note form">
-      <button className="button__close" type="button" onClick={onClose}>
-        {'<'}
-      </button>
       <fetcher.Form className="note__form" method="post" onSubmit={onClose}>
+        <button
+          className="button__saveAndClose"
+          aria-label="save and close button"
+          name="_action"
+          value={ButtonAction.Create}
+          type="submit"
+        >
+          {'<'}
+        </button>
         <input
           className="note__titleInput"
           type="text"
@@ -150,14 +157,6 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
           placeholder="Notes..."
         />
         {/* TODO: add checkboxes... */}
-        <button
-          name="_action"
-          value={ButtonAction.Create}
-          className="button__primary"
-          type="submit"
-        >
-          Create
-        </button>
       </fetcher.Form>
     </Dialog>
   );
@@ -174,15 +173,16 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
 
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Edit note form">
-      <button
-        className="button__close"
-        aria-label="close note"
-        type="button"
-        onClick={onClose}
-      >
-        {`<`}
-      </button>
       <fetcher.Form className="note__form" method="put" onSubmit={onClose}>
+        <button
+          className="button__saveAndClose"
+          name="_action"
+          value={ButtonAction.Save}
+          aria-label="save and close note"
+          type="submit"
+        >
+          {`<`}
+        </button>
         <input type="hidden" name="id" value={note?.id} />
         <input
           className="note__titleInput"
@@ -199,14 +199,6 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
           defaultValue={note?.content}
         />
         {/* TODO: add checkboxes... */}
-        <button
-          name="_action"
-          value={ButtonAction.Save}
-          className="button__primary"
-          type="submit"
-        >
-          Save
-        </button>
       </fetcher.Form>
       <fetcher.Form
         className="note__deleteNoteForm"
@@ -228,7 +220,7 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
 }
 
 function optimisticPost(notes: INote[], newNote: INote): INote[] {
-  return notes.concat([newNote]);
+  return notes.concat([{ ...newNote, id: `tempId-${uuid()}` }]);
 }
 
 function optimisticPut(notes: INote[], updatedNote: INote): INote[] {
@@ -293,6 +285,8 @@ export default function Index() {
   function handleCloseEditNoteForm() {
     setEditNote(null);
   }
+
+  console.log({ actionData });
 
   return (
     <div className="index__container">
