@@ -208,12 +208,16 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
           Save
         </button>
       </fetcher.Form>
-      <fetcher.Form method="delete" onSubmit={onClose}>
+      <fetcher.Form
+        className="note__deleteNoteForm"
+        method="delete"
+        onSubmit={onClose}
+      >
         <input type="hidden" name="id" value={note?.id} />
         <button
           name="_action"
           value={ButtonAction.Delete}
-          className="button__danger"
+          className="button__danger note__deleteButton"
           type="submit"
         >
           Delete

@@ -76,6 +76,10 @@
   outline: none;
 }
 
+.note__deleteButton {
+  width: 100%;
+}
+
 .button__primary {
   height: 42px;
   background-color: #0074d9;
@@ -90,6 +94,14 @@
   border: none;
   background-color: #aaa;
   color: #fff;
+}
+
+.button__danger {
+  height: 42px;
+  background-color: #ff4136;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
 }
 
 .button__close {
