@@ -8,6 +8,7 @@ import {
   useFetcher,
   useFetchers,
   useLoaderData,
+  useSubmit,
 } from 'remix';
 import { v4 as uuid } from 'uuid';
 import { Dialog } from '@reach/dialog';
@@ -63,7 +64,11 @@ function validateTitle(title: FormDataEntryValue | null): string {
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
 
+  console.log('\n\n~~~\nBody\n~~~\n\n', body);
+
   let _action = body.get('_action');
+
+  console.log({ _action, body });
 
   if (_action === ButtonAction.Create) {
     let content = validateContent(body.get('content'));
@@ -90,10 +95,13 @@ export const action: ActionFunction = async ({ request }) => {
     let id = validateId(body.get('id'));
     let title = validateTitle(body.get('title'));
 
+    console.log({ content, id, title, body });
+
     await updateNote(id, title, content);
     return json({ updated: true }, { status: 200 });
   }
 
+  return json({ teapot: false }, { status: 418 });
   // TODO: return bad request status
 
   // TODO: account for possible checkboxes...
@@ -135,11 +143,10 @@ function NewNoteForm({ isOpen, onClose }: NoteFormProps) {
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Add new note form">
       <fetcher.Form className="note__form" method="post" onSubmit={onClose}>
+        <input type="hidden" name="_action" value={ButtonAction.Create} />
         <button
           className="button__saveAndClose"
           aria-label="save and close button"
-          name="_action"
-          value={ButtonAction.Create}
           type="submit"
         >
           {'<'}
@@ -174,10 +181,9 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Edit note form">
       <fetcher.Form className="note__form" method="put" onSubmit={onClose}>
+        <input type="hidden" name="_action" value={ButtonAction.Save} />
         <button
           className="button__saveAndClose"
-          name="_action"
-          value={ButtonAction.Save}
           aria-label="save and close note"
           type="submit"
         >
@@ -206,12 +212,8 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
         onSubmit={onClose}
       >
         <input type="hidden" name="id" value={note?.id} />
-        <button
-          name="_action"
-          value={ButtonAction.Delete}
-          className="button__danger note__deleteButton"
-          type="submit"
-        >
+        <input type="hidden" name="_action" value={ButtonAction.Delete} />
+        <button className="button__danger note__deleteButton" type="submit">
           Delete
         </button>
       </fetcher.Form>
