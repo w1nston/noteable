@@ -167,6 +167,15 @@ type EditNoteFormProps = {
 
 function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
   let fetcher = useFetcher();
+  let [showCheckboxes, setShowCheckboxes] = useState<boolean>();
+
+  function handleClickCheckboxes() {
+    setShowCheckboxes(true);
+  }
+
+  function handleClickHideCheckboxes() {
+    setShowCheckboxes(false);
+  }
 
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-label="Edit note form">
@@ -188,14 +197,32 @@ function EditNoteForm({ isOpen, onClose, note }: EditNoteFormProps) {
           defaultValue={note?.title}
         />
         <Spacer />
-        <textarea
-          className="note__notesInput"
-          name="content"
-          placeholder="Notes..."
-          defaultValue={note?.content}
-        />
-        {/* TODO: add checkboxes... */}
+        {showCheckboxes ? (
+          <p>CHECKBOXES!</p>
+        ) : (
+          <textarea
+            className="note__notesInput"
+            name="content"
+            placeholder="Notes..."
+            defaultValue={note?.content}
+          />
+        )}
       </fetcher.Form>
+      {showCheckboxes ? (
+        <button
+          className="button_useCheckboxes note_useCheckboxButton"
+          onClick={handleClickHideCheckboxes}
+        >
+          Hide checkboxes
+        </button>
+      ) : (
+        <button
+          className="button_useCheckboxes note_useCheckboxButton"
+          onClick={handleClickCheckboxes}
+        >
+          Checkboxes
+        </button>
+      )}
       <fetcher.Form
         className="note__deleteNoteForm"
         method="delete"

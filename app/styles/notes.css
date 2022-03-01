@@ -80,6 +80,10 @@
   width: 100%;
 }
 
+.note_useCheckboxButton {
+  padding: 14px;
+}
+
 .button__primary {
   height: 42px;
   background-color: #0074d9;
@@ -101,6 +105,14 @@
   background-color: #ff4136;
   color: #fff;
   border: none;
+  border-radius: 4px;
+}
+
+.button_useCheckboxes {
+  background-color: #393d47;
+  color: #fff;
+  border: none;
+  height: 42px;
   border-radius: 4px;
 }
 
