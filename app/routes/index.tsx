@@ -1,14 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActionFunction,
   json,
   LinksFunction,
   LoaderFunction,
-  useActionData,
   useFetcher,
   useFetchers,
   useLoaderData,
-  useSubmit,
 } from 'remix';
 import { v4 as uuid } from 'uuid';
 import { Dialog } from '@reach/dialog';
@@ -24,6 +22,7 @@ import {
 import notesStyles from '~/styles/notes.css';
 import Spacer from '~/components/Spacer';
 import { getNoteSchema } from '~/utils/network-typesafety';
+import { usePrevious } from '~/hooks/use-previous';
 
 export const links: LinksFunction = () => {
   return [
@@ -64,11 +63,7 @@ function validateTitle(title: FormDataEntryValue | null): string {
 export const action: ActionFunction = async ({ request }) => {
   let body = await request.formData();
 
-  console.log('\n\n~~~\nBody\n~~~\n\n', body);
-
   let _action = body.get('_action');
-
-  console.log({ _action, body });
 
   if (_action === ButtonAction.Create) {
     let content = validateContent(body.get('content'));
@@ -95,16 +90,11 @@ export const action: ActionFunction = async ({ request }) => {
     let id = validateId(body.get('id'));
     let title = validateTitle(body.get('title'));
 
-    console.log({ content, id, title, body });
-
     await updateNote(id, title, content);
     return json({ updated: true }, { status: 200 });
   }
 
-  return json({ teapot: false }, { status: 418 });
-  // TODO: return bad request status
-
-  // TODO: account for possible checkboxes...
+  return json({ message: 'Bad request' }, { status: 400 });
 };
 
 export const loader: LoaderFunction = async () => {
@@ -249,14 +239,15 @@ function useOptimisticUI(): INote[] {
     if (fetcher.submission) {
       let { method, formData } = fetcher.submission;
 
+      // TODO: Validate input
       if (method.toLowerCase() === 'post') {
-        let newNote: INote = Object.fromEntries(formData) as INote; // TODO: Maybe validation?
+        let newNote: INote = Object.fromEntries(formData) as INote;
         return optimisticPost(notes, newNote);
       } else if (method.toLowerCase() === 'put') {
-        let updatedNote: INote = Object.fromEntries(formData) as INote; // -"-
+        let updatedNote: INote = Object.fromEntries(formData) as INote;
         return optimisticPut(notes, updatedNote);
       } else if (method.toLowerCase() === 'delete') {
-        let noteId: string = formData.get('id') as string; // -"-
+        let noteId: string = formData.get('id') as string;
         return optimisticDelete(notes, noteId);
       }
     }
@@ -265,12 +256,47 @@ function useOptimisticUI(): INote[] {
   return notes;
 }
 
+function useFetcherMessages() {
+  let [messages, setMessages] = useState<string[]>([]);
+  let previousMessages = usePrevious(messages);
+
+  let fetchers = useFetchers();
+  if (fetchers.length > 0) {
+    let [fetcher] = fetchers;
+    if (fetcher.data && fetcher.data.message) {
+      let { message } = fetcher.data;
+      if (
+        previousMessages &&
+        !previousMessages.includes(message) &&
+        !messages.includes(message)
+      ) {
+        setMessages((prevMessages) => prevMessages.concat([message]));
+      }
+    }
+  }
+
+  useEffect(() => {
+    let timerFn: any;
+    if (previousMessages && messages.length > previousMessages.length) {
+      timerFn = setTimeout(() => {
+        setMessages((prevMessages) => prevMessages.slice(1));
+      }, 5000);
+    }
+
+    return () => {
+      clearTimeout(timerFn);
+    };
+  }, [messages]);
+
+  return messages;
+}
+
 export default function Index() {
   let [showNewNoteForm, setShowNewNoteForm] = useState<boolean>(false);
   let [editNote, setEditNote] = useState<INote | null>(null);
   let notes = useOptimisticUI();
 
-  let actionData = useActionData<ActionData>();
+  let messages = useFetcherMessages();
 
   function handleCloseNewNoteForm() {
     setShowNewNoteForm(false);
@@ -287,8 +313,6 @@ export default function Index() {
   function handleCloseEditNoteForm() {
     setEditNote(null);
   }
-
-  console.log({ actionData });
 
   return (
     <div className="index__container">
@@ -319,7 +343,9 @@ export default function Index() {
         onClose={handleCloseEditNoteForm}
         note={editNote}
       />
-      {actionData?.message ? <Alert>{actionData.message}</Alert> : null}
+      {messages.map((message) => (
+        <Alert key={message}>{message}</Alert>
+      ))}
     </div>
   );
 }
